@@ -1,0 +1,81 @@
+CREATE TABLE users (
+	id SERIAL PRIMARY KEY,
+	first_name VARCHAR(100) NOT NULL,
+	last_name VARCHAR(100) NOT NULL,
+	email VARCHAR(255) UNIQUE NOT NULL,
+	password_hash TEXT NOT NULL,
+	created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE organizations (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(255) NOT NULL,
+	location VARCHAR(255),
+	sector VARCHAR(255),
+	created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE invitations (
+	id SERIAL PRIMARY KEY,
+	organization_id INT REFERENCES organizations(id),
+	user_id INT REFERENCES users(id),
+	status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'declined')),
+	invited_at TIMESTAMP DEFAULT NOW(),
+	responded_at TIMESTAMP
+);
+
+CREATE TABLE organization_roles (
+    id SERIAL PRIMARY KEY,
+    organization_id INT REFERENCES organizations(id),
+    user_id INT REFERENCES users(id),
+    role VARCHAR(50) CHECK (role IN ('admin', 'member')),
+    joined_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE websites (
+    id SERIAL PRIMARY KEY,
+    organization_id INT REFERENCES organizations(id) ON DELETE SET NULL,
+    user_id INT REFERENCES users(id) ON DELETE SET NULL,
+    name VARCHAR(255) NOT NULL,
+    url VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    CHECK (
+        (organization_id IS NOT NULL AND user_id IS NULL) OR
+        (user_id IS NOT NULL AND organization_id IS NULL)
+    )
+);
+
+CREATE TABLE metrics (
+    id SERIAL PRIMARY KEY,
+    website_id INT REFERENCES websites(id),
+    response_time_ms INT,
+    status_code INT,
+    timestamp TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE alerts (
+    id SERIAL PRIMARY KEY,
+    website_id INT REFERENCES websites(id),
+    alert_type VARCHAR(50) CHECK (alert_type IN ('uptime', 'response_time', 'error')),
+    threshold INT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE alert_history (
+    alert_history_id SERIAL PRIMARY KEY,
+    alert_id INT REFERENCES alerts(id),
+    triggered_at TIMESTAMP DEFAULT NOW(),
+    message TEXT
+);
+
+
+CREATE TABLE permissions (
+    permission_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id),
+    website_id INT REFERENCES websites(id),
+    can_view_metrics BOOLEAN DEFAULT TRUE,
+    can_edit_settings BOOLEAN DEFAULT FALSE,
+    can_manage_alerts BOOLEAN DEFAULT FALSE
+);
+
