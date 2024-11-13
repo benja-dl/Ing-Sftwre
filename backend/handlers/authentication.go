@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func SignUp(c *fiber.Ctx, db *sql.DB) error {
-	user := new(data.NewAccount)
+func UserSignUp(c *fiber.Ctx, db *sql.DB) error {
+	user := new(data.NewUserAccount)
 	if err := c.BodyParser(user); err != nil {
 		return err
 	}
@@ -21,6 +21,15 @@ func SignUp(c *fiber.Ctx, db *sql.DB) error {
 		})
 	}
 
+	// Crear la entidad tipo 'user'
+	var entityID int
+	err := db.QueryRow(`INSERT INTO entities (entity_type) VALUES ('user') RETURNING id`).Scan(&entityID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Error al crear la entidad de usuario",
+		})
+	}
+
 	hashPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -28,12 +37,13 @@ func SignUp(c *fiber.Ctx, db *sql.DB) error {
 		})
 	}
 
-	_, rowErr := db.Exec(`INSERT INTO users (first_name, last_name, email, password_hash)
-	VALUES ($1, $2, $3, $4)`, user.FirstName, user.LastName, user.Email, hashPassword)
+	// Insertar los datos del usuario
+	_, err = db.Exec(`INSERT INTO users (entity_id, first_name, last_name, email, password_hash)
+		VALUES ($1, $2, $3, $4, $5)`, entityID, user.FirstName, user.LastName, user.Email, hashPassword)
 
-	if rowErr != nil {
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "error al insertar al usuario en la base de datos",
+			"message": "Error al insertar al usuario en la base de datos",
 		})
 	}
 
@@ -42,7 +52,6 @@ func SignUp(c *fiber.Ctx, db *sql.DB) error {
 		"first name": user.FirstName,
 		"last name":  user.LastName,
 		"email":      user.Email,
-		"password":   hashPassword,
 	})
 }
 

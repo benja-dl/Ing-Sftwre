@@ -39,7 +39,7 @@ func main() {
 		return c.SendString("Hello, World!!!")
 	})
 	// RUTAS DE AUTENTICACIÓN
-	auth.Post("/signup", func(c *fiber.Ctx) error { return handlers.SignUp(c, db) })
+	auth.Post("/signup", func(c *fiber.Ctx) error { return handlers.UserSignUp(c, db) })
 	auth.Post("/signin", func(c *fiber.Ctx) error { return handlers.SignIn(c, db) })
 
 	app.Use(jwtware.New(jwtware.Config{

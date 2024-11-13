@@ -1,81 +1,96 @@
+-- Tabla para almacenar entidades genéricas (usuarios individuales y organizaciones)
+CREATE TABLE entities (
+    id SERIAL PRIMARY KEY,
+    entity_type VARCHAR(20) CHECK (entity_type IN ('user', 'organization')),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabla para almacenar datos específicos de usuarios
 CREATE TABLE users (
-	id SERIAL PRIMARY KEY,
-	first_name VARCHAR(100) NOT NULL,
-	last_name VARCHAR(100) NOT NULL,
-	email VARCHAR(255) UNIQUE NOT NULL,
-	password_hash TEXT NOT NULL,
-	created_at TIMESTAMP DEFAULT NOW()
+    id SERIAL PRIMARY KEY,
+    entity_id INT REFERENCES entities(id) ON DELETE CASCADE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Tabla para almacenar datos específicos de organizaciones
 CREATE TABLE organizations (
-	id SERIAL PRIMARY KEY,
-	name VARCHAR(255) NOT NULL,
-	location VARCHAR(255),
-	sector VARCHAR(255),
-	created_at TIMESTAMP DEFAULT NOW()
+    id SERIAL PRIMARY KEY,
+    entity_id INT REFERENCES entities(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    location VARCHAR(255),
+    sector VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE invitations (
-	id SERIAL PRIMARY KEY,
-	organization_id INT REFERENCES organizations(id),
-	user_id INT REFERENCES users(id),
-	status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'declined')),
-	invited_at TIMESTAMP DEFAULT NOW(),
-	responded_at TIMESTAMP
-);
-
+-- Tabla para gestionar roles dentro de organizaciones
 CREATE TABLE organization_roles (
     id SERIAL PRIMARY KEY,
-    organization_id INT REFERENCES organizations(id),
-    user_id INT REFERENCES users(id),
+    organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
     role VARCHAR(50) CHECK (role IN ('admin', 'member')),
     joined_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Tabla para almacenar los sitios web gestionados
 CREATE TABLE websites (
     id SERIAL PRIMARY KEY,
-    organization_id INT REFERENCES organizations(id) ON DELETE SET NULL,
-    user_id INT REFERENCES users(id) ON DELETE SET NULL,
+    owner_entity_id INT REFERENCES entities(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     url VARCHAR(255) UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    CHECK (
-        (organization_id IS NOT NULL AND user_id IS NULL) OR
-        (user_id IS NOT NULL AND organization_id IS NULL)
-    )
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Tabla para almacenar métricas de rendimiento de cada sitio web
 CREATE TABLE metrics (
     id SERIAL PRIMARY KEY,
-    website_id INT REFERENCES websites(id),
+    website_id INT REFERENCES websites(id) ON DELETE CASCADE,
     response_time_ms INT,
     status_code INT,
     timestamp TIMESTAMP DEFAULT NOW()
 );
 
+-- Tabla para almacenar las alertas configuradas para cada sitio web
 CREATE TABLE alerts (
     id SERIAL PRIMARY KEY,
-    website_id INT REFERENCES websites(id),
+    website_id INT REFERENCES websites(id) ON DELETE CASCADE,
     alert_type VARCHAR(50) CHECK (alert_type IN ('uptime', 'response_time', 'error')),
     threshold INT,
     created_at TIMESTAMP DEFAULT NOW(),
     active BOOLEAN DEFAULT TRUE
 );
 
+-- Historial de alertas activadas
 CREATE TABLE alert_history (
-    alert_history_id SERIAL PRIMARY KEY,
-    alert_id INT REFERENCES alerts(id),
+    id SERIAL PRIMARY KEY,
+    alert_id INT REFERENCES alerts(id) ON DELETE CASCADE,
     triggered_at TIMESTAMP DEFAULT NOW(),
     message TEXT
 );
 
-
+-- Tabla para almacenar los permisos de acceso a cada sitio web por usuario
 CREATE TABLE permissions (
-    permission_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id),
-    website_id INT REFERENCES websites(id),
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    website_id INT REFERENCES websites(id) ON DELETE CASCADE,
     can_view_metrics BOOLEAN DEFAULT TRUE,
     can_edit_settings BOOLEAN DEFAULT FALSE,
     can_manage_alerts BOOLEAN DEFAULT FALSE
 );
+
+-- Tabla para gestionar las invitaciones de organizaciones a usuarios
+CREATE TABLE invitations (
+    id SERIAL PRIMARY KEY,
+    organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'declined')) DEFAULT 'pending',
+    invited_at TIMESTAMP DEFAULT NOW(),
+    responded_at TIMESTAMP
+);
+
+-- Índice para acelerar la búsqueda de invitaciones por usuario y organización
+CREATE INDEX idx_invitations_user_org ON invitations (user_id, organization_id);
 
