@@ -34,9 +34,10 @@ func main() {
 
 	api := app.Group("/api")
 	auth := api.Group("/authentication")
+	domain := api.Group("/domain")
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!!!")
+		return c.SendString("Hello, Worldddd!!!")
 	})
 	// RUTAS DE AUTENTICACIÓN
 	auth.Post("/signup", func(c *fiber.Ctx) error { return handlers.UserSignUp(c, db) })
@@ -52,8 +53,20 @@ func main() {
 			})
 		},
 	}))
+	// Rutas protegidas - auth
 	auth.Get("/profile", func(c *fiber.Ctx) error { return handlers.Profile(c, db) })
 
+	// Rutas Protegidas - dominios
+	domain.Post("/add", func(c *fiber.Ctx) error {
+		return handlers.AddDomain(c, db)
+	})
+	domain.Delete("/delete", func(c *fiber.Ctx) error {
+		return handlers.DeleteDomain(c, db)
+	})
+	domain.Put("/edit", func(c *fiber.Ctx) error {
+		return handlers.UpdateDomainName(c, db)
+	})
+	domain.Get("getDomains", func(c *fiber.Ctx) error { return handlers.GetAllDomains(c, db) })
 	err = app.Listen(":8080")
 	if err != nil {
 		return

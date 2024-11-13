@@ -24,6 +24,7 @@ func UserSignUp(c *fiber.Ctx, db *sql.DB) error {
 	// Crear la entidad tipo 'user'
 	var entityID int
 	err := db.QueryRow(`INSERT INTO entities (entity_type) VALUES ('user') RETURNING id`).Scan(&entityID)
+
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Error al crear la entidad de usuario",
@@ -90,6 +91,7 @@ func SignIn(c *fiber.Ctx, db *sql.DB) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Sesión iniciada correctamente",
 		"token":   t,
+		"id":      user.ID,
 	})
 }
 
@@ -106,11 +108,19 @@ func Profile(c *fiber.Ctx, db *sql.DB) error {
 		})
 	}
 
+	accType, err := utils.GetAccountType(int(id), db)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "error al obtener datos",
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"id":         user.ID,
 		"first_name": user.FirstName,
 		"last_name":  user.LastName,
 		"email":      user.Email,
+		"type":       accType,
 	})
 
 }
