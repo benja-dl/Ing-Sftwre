@@ -11,6 +11,7 @@ import LoginPage from "./routes/login";
 import ProtectedRoute from "./protectedRoute";
 import PublicRoute from "./publicRoute";
 import Home from "./routes/home";
+import Register from "./routes/register";
 
 const router = createBrowserRouter([
     {
@@ -19,13 +20,17 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />,
     },
     {
-        path: '/home',
-        element: <Home />,
-    },
-    {
         path: '/login',
         element: <PublicRoute><LoginPage /></PublicRoute>
-    }
+    },
+    {
+        path: '/register',
+        element: <PublicRoute><Register /></PublicRoute>
+    },
+    {
+        path: '/home',
+        element: <ProtectedRoute><Home /></ProtectedRoute>,
+    },
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(
