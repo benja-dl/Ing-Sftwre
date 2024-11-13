@@ -77,6 +77,7 @@ func SignIn(c *fiber.Ctx, db *sql.DB) error {
 	if err != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "Sesión iniciada correctamente",
 		"token":   t,

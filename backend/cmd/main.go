@@ -3,6 +3,7 @@ package main
 import (
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/luccasniccolas/monitorWebApp/config"
 	"github.com/luccasniccolas/monitorWebApp/database"
 	"github.com/luccasniccolas/monitorWebApp/handlers"
@@ -24,8 +25,22 @@ func main() {
 	defer db.Close()
 
 	app := fiber.New()
+
+	// Configura CORS para permitir solicitudes del frontend
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:5173", // Cambia esto por la URL del frontend en producción
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
+
 	api := app.Group("/api")
 	auth := api.Group("/authentication")
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World!!!")
+	})
+	// RUTAS DE AUTENTICACIÓN
+	auth.Post("/signup", func(c *fiber.Ctx) error { return handlers.SignUp(c, db) })
+	auth.Post("/signin", func(c *fiber.Ctx) error { return handlers.SignIn(c, db) })
 
 	app.Use(jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{Key: []byte("secret")},
@@ -37,13 +52,6 @@ func main() {
 			})
 		},
 	}))
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!!!")
-	})
-	// RUTAS DE AUTENTICACIÓN
-	auth.Post("/signup", func(c *fiber.Ctx) error { return handlers.SignUp(c, db) })
-	auth.Post("/signin", func(c *fiber.Ctx) error { return handlers.SignIn(c, db) })
 	auth.Get("/profile", func(c *fiber.Ctx) error { return handlers.Profile(c, db) })
 
 	err = app.Listen(":8080")
