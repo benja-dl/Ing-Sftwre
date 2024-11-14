@@ -1,0 +1,25 @@
+version: '3.8'
+
+networks:
+  mynetwork:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+services:
+  postgresql-master:
+    image: 'bitnami/postgresql:14'
+    container_name: pgdb
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRESQL_USERNAME=user
+      - POSTGRESQL_PASSWORD=user
+      - POSTGRESQL_DATABASE=monitor_db
+      
+    volumes:
+     - /Users/cristian/Documents/ing_sw-main/Crear_Tabla_usuario.sql:/docker-entrypoint-initdb.d/Crear_Tabla_usuario.sql
+     - /Users/cristian/Documents/ing_sw-main/Crear_tabla_dominios.sql:/docker-entrypoint-initdb.d/Crear_tabla_dominios.sql
+    networks:
+      mynetwork:
+        ipv4_address: 172.20.0.5
