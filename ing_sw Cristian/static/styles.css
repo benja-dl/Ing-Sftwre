@@ -1,0 +1,167 @@
+/* Reset de márgenes y padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Fondo del body con un color suave que evoque serenidad */
+body {
+    background-color: #f4f4f4; /* Gris suave */
+    font-family: 'Georgia', serif;  /* Tipografía clásica */
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Contenedor principal */
+.container {
+    background-color: #fff;  /* Blanco limpio para el contenedor */
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);  /* Sombra sutil */
+    border: 2px solid #ddd;  /* Borde suave */
+    box-sizing: border-box;
+    background-color: #f9f9f9;  /* Fondo sutil */
+}
+
+/* Títulos */
+h1 {
+    font-size: 3em;
+    color: #2e2e2e;  /* Gris oscuro elegante */
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-transform: uppercase;  /* Para dar ese toque serio y clásico */
+}
+
+h3 {
+    font-size: 1.6em;
+    color: #2e2e2e;
+    margin-bottom: 15px;
+}
+
+/* Estilo de los formularios */
+form {
+    margin-bottom: 25px;
+}
+
+/* Estilo de los campos de entrada */
+input {
+    padding: 12px;
+    font-size: 1em;
+    width: 100%;
+    margin-bottom: 15px;
+    border: 2px solid #aaa;
+    border-radius: 8px;
+    background-color: #fff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus {
+    border-color: #c0a000;  /* Color dorado al hacer foco */
+    box-shadow: 0 0 5px rgba(192, 160, 0, 0.6);  /* Sombra dorada */
+    outline: none;
+}
+
+/* Botones de acción */
+button {
+    padding: 12px 20px;
+    font-size: 1.1em;
+    border: none;
+    background-color: #c0a000;  /* Dorado para los botones */
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-right: 10px;
+}
+
+button:hover {
+    background-color: #9e8b00;  /* Color dorado más oscuro al pasar el mouse */
+    transform: scale(1.05);  /* Efecto de aumentar tamaño al pasar el ratón */
+}
+
+button:focus {
+    outline: none;
+}
+
+/* Botón de Listar Dominios */
+#listDomainsButton {
+    background-color: #4CAF50;
+    color: white;
+    margin-top: 20px;
+}
+
+#listDomainsButton:hover {
+    background-color: #45a049;
+}
+
+/* Estilo de la lista de dominios */
+h2 {
+    font-size: 1.8em;
+    color: #333;
+    margin-top: 40px;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+li {
+    font-size: 1.2em;
+    color: #333;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    background-color: #fff;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    margin-bottom: 10px;
+    border-radius: 6px;
+}
+
+li:hover {
+    background-color: #eaeaea;
+    color: #000;
+}
+
+li:last-child {
+    border-bottom: none;
+}
+
+/* Estilo de los enlaces */
+a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    color: #45a049;
+    text-decoration: underline;
+}
+
+/* Añadir una sombra al pie de página */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #222;
+    color: #fff;
+    margin-top: 40px;
+    font-size: 14px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+footer a {
+    color: #f1f1f1;
+}
+
+footer a:hover {
+    color: #ffa500;
+}

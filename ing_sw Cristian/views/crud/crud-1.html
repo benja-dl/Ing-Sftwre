@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Dominiooos</title>
+    <link rel="stylesheet" href="/static/styles.css">
+
+
+</head>
+<body>
+    <div class="container">
+        <h1>Gestión de Dominioooos</h1>
+        
+        <form id="addDomainForm">
+            <input type="text" id="addDomainInput" placeholder="Agregar Dominio" required>
+            <button type="submit">Agregar</button>
+        </form>
+
+        <form id="editDomainForm">
+            <input type="text" id="oldDomainInput" placeholder="Dominio a Editar" required>
+            <input type="text" id="newDomainInput" placeholder="Nuevo Dominio" required>
+            <button type="submit">Editar</button>
+        </form>
+
+        <form id="deleteDomainForm">
+            <input type="text" id="deleteDomainInput" placeholder="Eliminar Dominio" required>
+            <button type="submit">Eliminar</button>
+        </form>
+
+        <button id="listDomainsButton">Listar Dominios</button>
+
+        <h2>Lista de Dominios</h2>
+        <ul id="domainList"></ul>
+    </div>
+
+    <script>
+        const domainList = document.getElementById('domainList');
+
+        // Función para listar dominios
+        async function listDomains() {
+            const response = await fetch('/list');
+            const domains = await response.json();
+            domainList.innerHTML = '';
+            domains.forEach(domain => {
+                const li = document.createElement('li');
+                li.textContent = domain;
+                domainList.appendChild(li);
+            });
+        }
+
+        // Agregar dominio
+        document.getElementById('addDomainForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const domain = document.getElementById('addDomainInput').value;
+            await fetch('/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ domain }),
+            });
+            document.getElementById('addDomainInput').value = '';
+            await listDomains();
+        });
+
+        // Editar dominio
+        document.getElementById('editDomainForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const oldDomain = document.getElementById('oldDomainInput').value;
+            const newDomain = document.getElementById('newDomainInput').value;
+            await fetch('/edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldDomain, newDomain }),
+            });
+            document.getElementById('oldDomainInput').value = '';
+            document.getElementById('newDomainInput').value = '';
+            await listDomains();
+        });
+
+        // Eliminar dominio
+        document.getElementById('deleteDomainForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const domain = document.getElementById('deleteDomainInput').value;
+            await fetch('/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ domain }),
+            });
+            document.getElementById('deleteDomainInput').value = '';
+            await listDomains();
+        });
+
+        // Listar dominios manualmente al hacer clic en el botón
+        document.getElementById('listDomainsButton').addEventListener('click', async () => {
+            await listDomains();
+        });
+
+        // Inicializar la lista de dominios al cargar la página
+        listDomains();
+    </script>
+</body>
+</html>

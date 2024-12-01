@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Dominios</title>
+    <link rel="stylesheet" href="/static/stylessssss.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Estadisticas</h1>
+
+        <form id="addDomainForm">
+            
+        </form>
+
+        <form id="editDomainForm">
+          
+        </form>
+
+        <form id="deleteDomainForm">
+           
+        </form>
+
+        <button id="listDomainsButton">Listar Dominios</button>
+      
+
+
+        <h2>Lista de Dominios</h2>
+        <ul id="domainList"></ul>
+    </div>
+
+    <script>
+        const domainList = document.getElementById('domainList');
+
+        // Función para verificar si un dominio está disponible
+        async function checkDomainAvailability(domain) {
+            try {
+                // Enviar solicitud HTTP HEAD al dominio
+                const response = await fetch(`https://${domain}`, { method: 'HEAD', mode: 'no-cors' });
+
+                // Si la respuesta es exitosa (200 OK), el dominio está disponible
+                return response.ok || response.status === 0; // Status 0 para algunos dominios no CORS
+            } catch (error) {
+                // Si ocurre algún error, el dominio no está disponible
+                return false;
+            }
+        }
+
+        // Función para medir la latencia del dominio
+        async function measureLatency(domain) {
+            const start = Date.now();
+            try {
+                const response = await fetch(`https://${domain}`, { method: 'HEAD', mode: 'no-cors' });
+                const end = Date.now();
+                if (response.ok || response.status === 0) {
+                    return end - start;  // Latencia en milisegundos
+                } else {
+                    return null;
+                }
+            } catch (error) {
+                return null;  // Si no se puede medir la latencia, devolver null
+            }
+        }
+
+
+
+        // Función para listar dominios con el botón de editar, verificación de disponibilidad y latencia
+        async function listDomains() {
+            const response = await fetch('/list');
+            const domains = await response.json();
+            domainList.innerHTML = ''; // Limpiar lista antes de agregar los elementos
+            domains.forEach(async domain => {
+                const li = document.createElement('li');
+                li.textContent = domain;
+
+                // Crear botón de editar
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Editar';
+                editButton.addEventListener('click', () => {
+                    document.getElementById('oldDomainInput').value = domain; // Rellenar campo de dominio a editar
+                    document.getElementById('newDomainInput').value = domain; // Rellenar campo de nuevo dominio
+                });
+
+                // Crear botón de eliminar
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.addEventListener('click', () => {
+                    document.getElementById('deleteDomainInput').value = domain; // Rellenar campo de dominio a eliminar
+                });
+
+                // Crear botón de estadisticas
+                const estadisticasBoton = document.createElement('button');
+                estadisticasBoton.textContent = 'Estadisticas';
+                estadisticasBoton.addEventListener('click', () => {
+                    document.getElementById('deleteDomainInput').value = domain; // Rellenar campo de dominio a eliminar
+                });
+
+                // Verificar la disponibilidad del dominio
+                const available = await checkDomainAvailability(domain);
+                const latency = await measureLatency(domain);
+
+                // Mostrar latencia solo si el dominio está disponible
+                if (available && latency !== null) {
+                    const latencyDisplay = document.createElement('span');
+                    latencyDisplay.textContent = ` | Latencia: ${latency} ms`;
+                    latencyDisplay.style.color = 'green';
+                    li.style.color = 'green';  // Color verde para dominios disponibles
+                    li.title = 'Dominio disponible';
+                    li.appendChild(latencyDisplay);  // Mostrar la latencia en el DOM
+                } else {
+                    li.style.color = 'red';    // Color rojo para dominios no disponibles
+                    li.title = 'Dominio no disponible';
+                }
+
+                // Añadir botones al <li>
+                li.appendChild(editButton);
+                li.appendChild(deleteButton);
+                // li.appendChild(estadisticasBoton);
+                domainList.appendChild(li);
+            });
+        }
+
+        // Agregar dominio
+        document.getElementById('addDomainForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const domain = document.getElementById('addDomainInput').value;
+            await fetch('/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ domain }),
+            });
+            document.getElementById('addDomainInput').value = '';
+            await listDomains();
+        });
+
+        // Editar dominio
+        document.getElementById('editDomainForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const oldDomain = document.getElementById('oldDomainInput').value;
+            const newDomain = document.getElementById('newDomainInput').value;
+            await fetch('/edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldDomain, newDomain }),
+            });
+            document.getElementById('oldDomainInput').value = '';
+            document.getElementById('newDomainInput').value = '';
+            await listDomains();
+        });
+
+        // Eliminar dominio
+        document.getElementById('deleteDomainForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const domain = document.getElementById('deleteDomainInput').value;
+            await fetch('/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ domain }),
+            });
+            document.getElementById('deleteDomainInput').value = '';
+            await listDomains();
+        });
+
+        // Listar dominios manualmente al hacer clic en el botón
+        document.getElementById('listDomainsButton').addEventListener('click', async () => {
+            await listDomains();
+        });
+
+        // Inicializar la lista de dominios al cargar la página
+        listDomains();
+    </script>
+</body>
+
+</html>
